@@ -1,0 +1,422 @@
+{% extends 'partials/base.html' %}
+
+{% block title %}Point of Sale (POS){% endblock %}
+
+{% load static %}
+
+{% block style %}
+<link rel="stylesheet" href="{% static 'assets/css/pos.css' %}">
+<style>
+
+
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+
+    <div class="row">
+        <!-- Product Selection Sidebar -->
+        <div class="col-xl-7 col-md-12">
+            <div class="card shadow-sm">
+                <div class="card-header d-flex justify-content-between align-items-center gap-2">
+                    <h4 class="card-title flex-grow-1 m-0">Products</h4>
+                </div>
+        
+                <div class="card-body">
+                    <!-- Filters Section -->
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <select class="form-select form-select" data-choices name="categoryFilter" id="categoryFilter" >
+                                <option value="">All Categories</option>
+                                {% for category in categories %}
+                                    <option value="{{ category.id }}">{{ category.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <input type="text" class="form-control form-control" id="productSearch" placeholder="🔍 Search for products...">
+                        </div>
+                        <div class="col-md-4">
+                            <select class="form-select form-select" data-choices name="customerSelect" id="customerSelect">
+                                <option value="">Walk In Customer</option>
+                                {% for customer in customers %}
+                                    <option value="{{ customer.id }}">{{ customer.first_name }} {{ customer.last_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+        
+                    <div class="row" id="productList">
+                        {% for product in products %}
+                            <div class="col-xl-3 col-md-4 col-sm-6 mb-4 product-item" data-category="{{ product.category.id }}">
+                                <div class="card product-card border-0 shadow-sm h-100">
+                                    <div class="position-relative" style="cursor: pointer;" onclick="addToCart( {{ product.id }} , '{{ product.name }}', {{ product.price }}, '{{ product.sku }}', {{ product.stock_quantity }} )">
+                                        <img id="product-image-{{ product.id }}" src="{{ product.image.url }}" class="card-img-top img-fluid rounded-top" alt="{{ product.name }}" style="object-fit: cover;">
+                                    </div>
+                                    <div class="card-body p-3">
+                                        <h6 class="card-title fw-bold text-truncate">{{ product.name }}</h6>
+                                        <p class="text-truncate">{{ product.sku }}</p>
+                                        <div class="d-flex justify-content-between align-items-center mt-1">
+                                            <p class="card-text text-primary fw-bold mb-1">$ {{ product.price }}</p>
+                                            <span class="badge {% if product.stock_quantity > 10 %} bg-success {% elif product.stock_quantity > 0 %} bg-warning {% else %} bg-danger {% endif %}">
+                                                {{ product.stock_quantity }} left
+                                            </span>
+                                        </div>  
+        
+                                        <!-- Color Selection -->
+                                        <div class="d-flex align-items-center mb-2">
+                                            <div class="d-flex">
+                                                <span data-color="" 
+                                                    data-image-url="{{ product.image.url }}" 
+                                                    data-product-id="{{ product.id }}" 
+                                                    onclick="addColor(this)" 
+                                                    class="color-circle border rounded-circle me-1" 
+                                                    style="background-color: transparent; width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer;">
+                                                    -
+                                                </span>
+
+                                                {% for color in product.colors %}
+                                                    <span data-color="{{ color.color_hex }}" data-image-url="{{ color.image_url }}" data-product-id="{{ product.id }}"  onclick="addColor(this)" class="color-circle border rounded-circle me-1" 
+                                                        style="background-color: {{ color.color_hex }}; width: 18px; height: 18px; display: inline-block; cursor: pointer;">
+                                                    </span>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+
+                                        <!-- Size Selection -->
+                                        <div class="d-flex align-items-center mb-2">
+                                            <select class="form-select form-select-sm" id="select_size" onclick="addSize(this)">
+                                                <option value="">Select size</option>
+                                                {% for size in product.sizes %}
+                                                    <option data-size="{{ size }}" value="{{ size }}">{{ size }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+
+        
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+        
+                    <!-- Pagination Controls -->
+                    <div class="row">
+                        <div class="col-md-12">
+                            <nav>
+                                <ul class="pagination justify-content-center">
+                                    {% if page_obj.has_previous %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page=1" aria-label="First">«</a>
+                                        </li>
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Previous">‹</a>
+                                        </li>
+                                    {% endif %}
+                                    <li class="page-item disabled">
+                                        <span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                                    </li>
+                                    {% if page_obj.has_next %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Next">›</a>
+                                        </li>
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}" aria-label="Last">»</a>
+                                        </li>
+                                    {% endif %}
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+        
+                </div>
+            </div>
+        </div>
+        
+        
+        <!-- Cart Sidebar -->
+        <div class="col-xl-5 col-md-12">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Purchase Products</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Cart Items Section -->
+                    <div id="cartItems" class="cart-items-scrollable small">
+                        <!-- Cart items will be injected here -->
+                    </div>
+        
+                    <!-- Promo Code Section -->
+                    <!-- <div class="mt-3">
+                        <label for="promoCode" class="form-label small">Promo Code</label>
+                        <div class="input-group input-group-sm">
+                            <input type="text" id="promoCode" class="form-control form-control-sm" placeholder="Enter promo code" />
+                            <button class="btn btn-outline-secondary btn-sm" onclick="applyCupon()">Apply</button>
+                        </div>
+                        <div id="promoSuccessMessage" class="text-success mt-1 small" style="display: none;"></div>
+                        <div id="promoErrorMessage" class="text-danger mt-1 small" style="display: none;"></div>
+                    </div> -->
+        
+                    <!-- Cart Summary Section -->
+                    <div class="d-flex flex-column mt-3">
+                        <div class="d-flex justify-content-between">
+                            <h6 class="mb-1">Subtotal:</h6>
+                            <h6 class="mb-1">$<span id="subtotal">0.00</span></h6>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <h6 class="mb-1">Tax:</h6>
+                            <h6 class="mb-1"><span id="tax">({{ company_setting.tax }}%) +</span><span id="taxAmount"></span></h6>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <h6 class="mb-1">Total:</h6>
+                            <h6 class="mb-1">$<span id="totalPrice">0.00</span></h6>
+                        </div>
+                        <button class="btn btn-success btn-sm mt-2" data-bs-toggle="modal" data-bs-target="#checkoutModal">
+                            Checkout
+                        </button>
+                    </div>
+                    
+                    
+                </div>
+            </div>
+        </div>
+        
+        
+    
+    </div>
+
+</div>
+
+<!-- Checkout Modal -->
+<div class="modal fade" id="checkoutModal" tabindex="-1" aria-labelledby="checkoutModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="{% url 'pos:pos' %}">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title" id="checkoutModalLabel">💳 Checkout</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="paymentMethod" class="form-label">Payment Method</label>
+                        <select class="form-select" id="paymentMethod" name="payment_method" required>
+                            {% for payment_method in payment_methods %}
+                                <option value="{{ payment_method.0 }}">{{ payment_method.1 }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="totalAmount" class="form-label">Total Amount</label>
+                        <input type="text" class="form-control" id="totalAmount" name="total_amount" readonly >
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="paidAmount" class="form-label">Paid Amount</label>
+                        <input type="number" class="form-control" id="paidAmount" name="paid_amount" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="dueAmount" class="form-label fw-bold text-danger">Due Amount</label>
+                        <input type="number" class="form-control bg-light text-danger fw-bold" id="dueAmount" name="due_amount" readonly>
+                    </div>
+
+                    <!-- Change Amount -->
+                    <div class="mb-3">
+                        <label for="changes" class="form-label fw-bold text-success">Change (If Overpaid)</label>
+                        <input type="number" class="form-control bg-light text-success fw-bold" id="changes" name="changes" readonly>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="note" class="form-label">Note (Optional)</label>
+                        <textarea class="form-control" id="note" name="note" rows="2" placeholder="Add any additional details here..."></textarea>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" onclick="checkout()" class="btn btn-success">Complete Purchase</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script>
+function getCSRFToken() {
+    return document.querySelector('[name=csrfmiddlewaretoken]').value;
+}
+
+function applyCupon() {
+    const promoCode = document.getElementById('promoCode').value;
+    const totalPrice = document.getElementById('totalPrice').innerText;
+    const csrfToken = getCSRFToken();
+    const promoSuccessMessage = document.getElementById('promoSuccessMessage');
+    const promoErrorMessage = document.getElementById('promoErrorMessage');
+    let customer = document.getElementById('customerSelect').value || null;
+
+    //apply cupon to cart
+    // $.ajax({
+    //     url: '{% url "api:apply-cupon" %}',
+    //     type: 'POST',
+    //     dataType: 'json',
+    //     data: {
+    //         cupon_code: promoCode,
+    //         total_amount: totalPrice,
+    //         customer: customer,
+    //         csrfmiddlewaretoken: csrfToken
+    //     },
+    //     success: function(response) {
+    //         document.getElementById('totalPrice').innerText = response.total_amount.toFixed(2);
+    //         promoErrorMessage.style.display = 'none';
+    //         promoSuccessMessage.style.display = 'block';
+    //         promoSuccessMessage.innerText = response.message;
+    //     },
+    //     error: function(xhr) {
+    //         const response = JSON.parse(xhr.responseText);
+    //         promoSuccessMessage.style.display = 'none';
+    //         promoErrorMessage.style.display = 'block';
+    //         promoErrorMessage.innerText = response.error;
+    //     }
+    // });
+}
+
+
+document.getElementById("paidAmount").addEventListener("input", function() {
+    const totalAmount = parseFloat(document.getElementById("totalAmount").value) || 0;
+    const paidAmount = parseFloat(this.value) || 0;
+
+    const dueAmount = totalAmount - paidAmount;
+    document.getElementById("dueAmount").value = dueAmount.toFixed(2);  
+
+    let changesAmount = 0;
+    if (paidAmount > totalAmount) {
+        changesAmount = paidAmount - totalAmount;
+        document.getElementById("changes").value = changesAmount.toFixed(2); 
+        document.getElementById("dueAmount").value = "0.00"; 
+    } else {
+        document.getElementById("changes").value = "0.00";  
+    }
+});
+
+
+function filterAndSearchProducts() {
+    var selectedCategory = document.getElementById("categoryFilter").value;
+    var searchQuery = document.getElementById("productSearch").value.toLowerCase();
+    var csrfToken = getCSRFToken(); // Get CSRF token
+
+    // Perform the AJAX request
+    $.ajax({
+        url: '{% url "pos:pos" %}', // Your Django view URL
+        type: 'POST',
+        dataType: 'json',
+        data: {
+            category: selectedCategory,
+            search: searchQuery,
+            csrfmiddlewaretoken: csrfToken // Include CSRF token
+        },
+        success: function(response) {
+            // Update the product list
+            updateProductList(response.products);
+            updatePagination(response);
+        }
+    });
+}
+
+function updateProductList(products) {
+    var productListDiv = document.getElementById("productList");
+    productListDiv.innerHTML = '';  // Clear the current list
+
+    // Loop through the products and display them
+    products.forEach(function(product) {
+        var productItem = `
+            <div class="col-xl-3 col-md-4 col-sm-6 mb-4 product-item" data-category="${product.category}">
+                <div class="card product-card border-0 shadow-sm h-100" style="cursor: pointer;" >
+                    <div class="position-relative">
+                        <img src="${product.image_url}" onclick="addToCart(${product.id}, '${product.name}', ${product.price}, '${product.sku}', ${product.stock_quantity} )" class="card-img-top img-fluid rounded-top" alt="${product.name}" style="object-fit: cover;">
+                    </div>
+                    <div class="card-body p-3">
+                        <h6 class="card-title fw-bold text-truncate">${product.name}</h6>
+                        <p class="text-truncate">${product.sku}</p>
+                        <div class="d-flex justify-content-between align-items-center mt-1">
+                            <p class="card-text text-primary fw-bold mb-1">$ ${product.price}</p>
+                            <span class="badge ${product.stock_quantity > 10 ? 'bg-success' : (product.stock_quantity > 0 ? 'bg-warning' : 'bg-danger')}">
+                                ${product.stock_quantity} left
+                            </span>
+                        </div>  
+
+                        <!-- Color Selection -->
+                        <div class="d-flex align-items-center mb-2">
+                            <div class="d-flex">
+                                <span data-color="" 
+                                    data-image-url="${product.image}" 
+                                    data-product-id="${ product.id }" 
+                                    onclick="addColor(this)" 
+                                    class="color-circle border rounded-circle me-1" 
+                                    style="background-color: transparent; width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer;">
+                                    -
+                                </span>
+
+                                ${product.colors.map(color => `
+                                    <span data-color="${color.color_hex}" data-image-url="${color.image_url}" data-product-id="${product.id}"  onclick="addColor(this)" class="color-circle border rounded-circle me-1" 
+                                        style="background-color: ${color.color_hex}; width: 18px; height: 18px; display: inline-block; cursor: pointer;">
+                                    </span>
+                                `).join('')}
+                            </div>
+                        </div>
+
+                        <!-- Size Selection -->
+                        <div class="d-flex align-items-center mb-2">
+                            <select class="form-select form-select-sm" id="select_size" onclick="addSize(this)">
+                                <option value="">Select size</option>
+                                ${product.sizes.map(size => `<option value="${size}">${size}</option>`).join('')}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        productListDiv.innerHTML += productItem;
+    });
+}
+
+function updatePagination(response) {
+    var paginationDiv = document.querySelector('.pagination');
+    paginationDiv.innerHTML = '';
+
+    if (response.has_previous) {
+        paginationDiv.innerHTML += `
+            <li class="page-item"><a class="page-link" href="?page=1" aria-label="First">«</a></li>
+            <li class="page-item"><a class="page-link" href="?page=${response.previous_page_number}" aria-label="Previous">‹</a></li>
+        `;
+    }
+
+    paginationDiv.innerHTML += `
+        <li class="page-item disabled">
+            <span class="page-link">Page ${response.current_page} of ${response.num_pages}</span>
+        </li>
+    `;
+
+    if (response.has_next) {
+        paginationDiv.innerHTML += `
+            <li class="page-item"><a class="page-link" href="?page=${response.next_page_number}" aria-label="Next">›</a></li>
+            <li class="page-item"><a class="page-link" href="?page=${response.num_pages}" aria-label="Last">»</a></li>
+        `;
+    }
+}
+
+// Attach event listeners for filtering and searching
+document.getElementById("categoryFilter").addEventListener('change', filterAndSearchProducts);
+document.getElementById("productSearch").addEventListener('keyup', filterAndSearchProducts);
+</script>
+<script>
+    const TAX_RATE = {{ company_setting.tax|default:0|floatformat:2 }};
+</script>
+<script src="{% static 'assets/js/pos.js' %}"></script>
+{% endblock %}

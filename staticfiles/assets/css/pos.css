@@ -1,0 +1,119 @@
+.color-circle {
+    transition: background-color 0.3s ease; /* Smooth transition */
+}
+
+.color-circle:hover {
+    filter: brightness(1.3); /* Make the color appear lighter on hover */
+}
+
+
+#productList {
+    max-height: 500px; /* Adjust height as needed */
+    overflow-y: auto;
+    padding-right: 10px; /* Prevents content cutoff due to scrollbar */
+}
+
+/* Hide scrollbar for cleaner look (optional) */
+#productList::-webkit-scrollbar {
+    width: 6px;
+}
+
+#productList::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+}
+
+#productList::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+/* Card styling */
+.card {
+    border-radius: 8px;
+    overflow: hidden;
+    background-color: #fff;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Cart summary styles */
+#totalPrice, #subtotal, #tax {
+    font-weight: bold;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .card-header h4 {
+        font-size: 1.5rem;
+    }
+
+    .card-body {
+        padding: 1rem;
+    }
+
+    .input-group {
+        width: 100%;
+    }
+
+    #promoCode {
+        font-size: 0.9rem;
+    }
+
+    #applyPromoCode {
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .card {
+        margin-top: 1rem;
+    }
+
+    .d-flex {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .d-flex justify-content-between {
+        width: 100%;
+    }
+}
+
+/* Make the cart items section scrollable */
+.cart-items-scrollable {
+    max-height: 430px;  /* Adjust this value as per your design requirements */
+    overflow-y: auto;   /* Enable vertical scrolling */
+    margin-bottom: 20px; /* Space for promo code section */
+}
+
+/* Optional: Add some padding to make the scroll area look better */
+.cart-items-scrollable::-webkit-scrollbar {
+    width: 8px;
+}
+
+.cart-items-scrollable::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+}
+
+.cart-items-scrollable::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+@media (max-width: 768px) {
+    .cart-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .item-details, .item-quantity, .item-price {
+        width: 100%;
+    }
+
+    .item-quantity {
+        margin-top: 10px;
+    }
+
+    .item-price {
+        margin-top: 10px;
+    }
+}

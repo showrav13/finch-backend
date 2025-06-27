@@ -1,0 +1,124 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+     <!-- Title Meta -->
+     <meta charset="utf-8" />
+     <title>{% block title %} {% endblock %} | Fleet Ecommerce</title>
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <meta name="description" content="A fully responsive premium admin dashboard template" />
+     <meta name="author" content="Techzaa" />
+     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+     <!-- App favicon -->
+     <link rel="shortcut icon" href="{% static '/assets/images/favicon.ico'  %}">
+
+     <!-- Vendor css (Require in all Page) -->
+     <link href="{% static '/assets/css/vendor.min.css' %}" rel="stylesheet" type="text/css" />
+
+     <!-- Icons css (Require in all Page) -->
+     <link href="{% static 'assets/css/icons.min.css' %}" rel="stylesheet" type="text/css" />
+
+     <!-- App css (Require in all Page) -->
+     <link href="{% static 'assets/css/app.min.css' %}" rel="stylesheet" type="text/css" />
+
+     <!-- Theme Config js (Require in all Page) -->
+     <script src="{% static 'assets/js/config.js' %}"></script>
+
+     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+
+
+     {% block style %} {% endblock %}
+</head>
+
+<body>
+
+     <!-- START Wrapper -->
+     <div class="wrapper">
+
+          <!-- ========== Topbar Start ========== -->
+          {% include 'partials/topbar.html' %}
+
+          <!-- Right Sidebar (Theme Settings) -->
+          {% include 'partials/sidebar.html' %}
+          <!-- ========== Topbar End ========== -->
+        
+          <!-- ========== App Menu Start ========== -->
+
+          
+          <!-- ========== App Menu End ========== -->
+
+          <!-- ==================================================== -->
+          <!-- Start right Content here -->
+          <!-- ==================================================== -->
+          <div class="page-content">
+
+            <div class="container-fluid">
+
+                {% if messages %}
+                    {% for message in messages %}
+                        {% if "error" in message.tags %}
+                            <div class="alert alert-danger fade show alert-icon" role="alert">
+                        {% else %}
+                            <div class="alert alert-{{ message.tags }} fade show alert-icon" role="alert">
+                        {% endif %}
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar-sm rounded bg-primary d-flex justify-content-center align-items-center fs-18 me-2 flex-shrink-0">
+                                        <i class="bx bx-info-circle text-white"></i>
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            </div>
+                    {% endfor %}
+                {% endif %}
+
+            </div>
+            
+
+               <!-- Start Container Fluid -->
+               {% block content %} {% endblock %}
+               <!-- End Container Fluid -->
+
+               <!-- ========== Footer Start ========== -->
+               <footer class="footer">
+                   <div class="container-fluid">
+                       <div class="row">
+                           <div class="col-12 text-center">
+                               <script>document.write(new Date().getFullYear())</script> &copy; Finch & Co. All Rights Reserved.
+                       </div>
+                   </div>
+               </footer>
+               <!-- ========== Footer End ========== -->
+
+          </div>
+          <!-- ==================================================== -->
+          <!-- End Page Content -->
+          <!-- ==================================================== -->
+
+     </div>
+     <!-- END Wrapper -->
+
+     <!-- Vendor Javascript (Require in all Page) -->
+     <script src="{% static 'assets/js/vendor.js' %}"></script>
+
+     <!-- App Javascript (Require in all Page) -->
+     <script src="{% static 'assets/js/app.js' %}"></script>
+
+     <!-- Vector Map Js -->
+     <script src="{% static 'assets/vendor/jsvectormap/js/jsvectormap.min.js' %}"></script>
+     <script src="{% static 'assets/vendor/jsvectormap/maps/world-merc.js' %}"></script>
+     <script src="{% static 'assets/vendor/jsvectormap/maps/world.js' %}"></script>
+
+     <!-- Dashboard Js -->
+     <script src="{% static 'assets/js/pages/dashboard.js' %}"></script>
+
+     {% block scripts %} {% endblock %}
+
+</body>
+
+
+<!-- Mirrored from techzaa.in/larkon/admin/index.html by HTTrack Website Copier/3.x [XR&CO'2014], Mon, 30 Dec 2024 13:39:02 GMT -->
+</html>
