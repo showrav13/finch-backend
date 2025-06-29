@@ -24,6 +24,7 @@ maxminddb==2.6.3
 multidict==6.1.0
 pillow==11.1.0
 propcache==0.3.0
+psycopg2==2.9.10
 PyJWT==2.10.1
 python-barcode==0.15.1
 python-dateutil==2.9.0.post0
@@ -35,5 +36,6 @@ six==1.17.0
 sqlparse==0.5.3
 stripe==11.6.0
 typing_extensions==4.12.2
+tzdata==2025.2
 urllib3==2.3.0
 yarl==1.18.3

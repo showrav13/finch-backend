@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: django
+  namespace: django-app
+spec:
+  type: LoadBalancer   # Use NodePort if LoadBalancer unsupported
+  ports:
+    - port: 80
+      targetPort: 8000
+  selector:
+    app: django

@@ -1,0 +1,43 @@
+
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15
+    container_name: postgres-db
+    environment:
+      POSTGRES_DB: fleetdb
+      POSTGRES_USER: roy77
+      POSTGRES_PASSWORD: asdf1234@77
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U roy77"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    
+  web:
+    image: 3-tire-back
+    container_name: 3-tire-back
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./.env:/app/.env:ro
+    environment:
+      - PYTHONUNBUFFERED=1
+      - POSTGRES_HOST=db
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    
+
+volumes:
+  postgres_data:

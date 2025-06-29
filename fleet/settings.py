@@ -120,9 +120,9 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': os.getenv('POSTGRES_DB', 'fleetdb'),
-        'USER': os.getenv('POSTGRES_USER', 'fleetuser'),
-        'PASSWORD': os.getenv('POSTGRES_PASSWORD', 'fleetpassword'),
-        'HOST': os.getenv('POSTGRES_HOST', 'localhost'),
+        'USER': os.getenv('POSTGRES_USER', 'roy77'),
+        'PASSWORD': os.getenv('POSTGRES_PASSWORD', 'asdf1234@77'),
+        'HOST': os.getenv('POSTGRES_HOST', 'db'),
         'PORT': os.getenv('POSTGRES_PORT', '5432'),
     }
 }

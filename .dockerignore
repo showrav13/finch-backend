@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.sqlite3
+
+# Django static files
+/staticfiles/
+/media/
+
+# Environment
+.env
+*.env
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv/
+.envrc
+
+# IDEs and editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Docker
+Dockerfile
+docker-compose.yml
+docker-compose.override.yml
