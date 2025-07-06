@@ -13,8 +13,8 @@ jobs:
         image: postgres:15
         env:
           POSTGRES_DB: fleetdb
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres123
+          POSTGRES_USER: roy77
+          POSTGRES_PASSWORD: asdf1234@77
         ports:
           - 5432:5432
         options: >-
