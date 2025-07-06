@@ -1,56 +1,41 @@
-
-# Build stage
-FROM ubuntu:22.04 AS builder
+# ---- Build Stage ----
+FROM python:3.10-slim as builder
 
 WORKDIR /app
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
 
-# Install Python and build dependencies (including PostgreSQL dev libraries)
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    python3 \
-    python3-pip \
-    python3-venv \
-    python3-dev \
-    build-essential \
+# Install required system packages for psycopg2
+RUN apt-get update && apt-get install -y \
+    gcc \
     libpq-dev \
-    libssl-dev \
-    libffi-dev \
-    zlib1g-dev \
-    && apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements and install dependencies
+# Create and activate virtualenv
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Install dependencies
 COPY requirements.txt .
-RUN python3 -m venv venv1 && \
-    . venv1/bin/activate && \
-    pip install --no-cache-dir --upgrade pip && \
+RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
-# Production stage
-FROM ubuntu:22.04 AS production
+# ---- Runtime Stage ----
+FROM python:3.10-slim
 
 WORKDIR /app
+ENV PATH="/opt/venv/bin:$PATH"
 
-# Install only runtime dependencies (including PostgreSQL client libraries)
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    python3 \
-    python3-venv \
-    libpq5 \
-    && apt-get clean && \
+# Install runtime libraries for psycopg2
+RUN apt-get update && apt-get install -y libpq5 && \
     rm -rf /var/lib/apt/lists/*
 
-# Copy virtual environment from builder stage
-COPY --from=builder /app/venv1 /app/venv1
+COPY --from=builder /opt/venv /opt/venv
+COPY . .
 
-# Copy application code
-COPY . /app/
-
-# Create non-root user for security
-RUN useradd -m -u 1000 appuser && \
-    chown -R appuser:appuser /app
+RUN useradd -m appuser && chown -R appuser:appuser /app
 USER appuser
 
 EXPOSE 8000
-
-CMD ["/bin/bash", "-c", "source venv1/bin/activate && python manage.py migrate && python manage.py createsuperuser --noinput && python manage.py runserver 0.0.0.0:8000"]
+CMD ["sh", "-c", "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"]

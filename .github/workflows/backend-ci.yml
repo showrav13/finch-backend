@@ -1,0 +1,70 @@
+name: Frontend CI/CD
+
+on:
+  push:
+    branches: main
+
+jobs:
+  build-test-deploy:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: fleetdb
+          POSTGRES_USER: {{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: {{ secrets.POSTGRES_PASSWORD }}
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U ${{ secrets.POSTGRES_USER }}"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    env:
+      DEBUG: "1"
+      SECRET_KEY: devsecret
+      POSTGRES_DB: fleetdb
+      POSTGRES_USER: {{ secrets.POSTGRES_USER }}
+      POSTGRES_PASSWORD: {{ secrets.POSTGRES_PASSWORD }}
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+      STRIPE_SECRET_KEY: {{ secrets.STRIPE_SECRET_KEY }}
+      STRIPE_PUBLIC_KEY: {{ secrets.STRIPE_PUBLIC_KEY }}
+      STRIPE_WEBHOOK_SECRET: {{ secrets.STRIPE_WEBHOOK_SECRET }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.10
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run Linter
+        run: |
+          pip install flake8
+          flake8 . || echo "Lint issues found"
+
+      - name: Run Migrations and Tests
+        env:
+          DJANGO_SETTINGS_MODULE: backend.settings
+        run: |
+          python manage.py migrate
+          python manage.py test
+
+      - name: Docker Login
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+      - name: Build & Push Docker Image
+        run: |
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/finch-backend:latest .
+          docker push ${{ secrets.DOCKER_USERNAME }}/finch-backend:latest
